@@ -3,3 +3,5 @@
 ################################################################################
 
 /Services/OrdersService/obj
+/Services/OrdersService/bin/Debug/netcoreapp2.1
+/.vs

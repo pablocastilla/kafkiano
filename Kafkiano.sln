@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2050
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{CF56FA58-7758-4159-8AB8-1E8B8024191B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrdersService", "Services\OrdersService\OrdersService.csproj", "{5396E7F1-F913-47C4-B600-6640B4E09992}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5396E7F1-F913-47C4-B600-6640B4E09992}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5396E7F1-F913-47C4-B600-6640B4E09992}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5396E7F1-F913-47C4-B600-6640B4E09992}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5396E7F1-F913-47C4-B600-6640B4E09992}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5396E7F1-F913-47C4-B600-6640B4E09992} = {CF56FA58-7758-4159-8AB8-1E8B8024191B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {46FC2DCE-C592-4B59-9D8E-01464F5E4808}
+	EndGlobalSection
+EndGlobal
