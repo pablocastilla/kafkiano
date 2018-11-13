@@ -18,7 +18,7 @@ namespace OrdersService
             };
 
 
-            Run_Consume(new List<string>() {"foo"}, cts.Token);
+            Run_Consume(new List<string>() {"OrdersCommands"}, cts.Token);
         }
 
 

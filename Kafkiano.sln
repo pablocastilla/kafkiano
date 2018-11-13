@@ -5,7 +5,11 @@ VisualStudioVersion = 15.0.28010.2050
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{CF56FA58-7758-4159-8AB8-1E8B8024191B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrdersService", "Services\OrdersService\OrdersService.csproj", "{5396E7F1-F913-47C4-B600-6640B4E09992}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrdersService", "Services\OrdersService\OrdersService.csproj", "{5396E7F1-F913-47C4-B600-6640B4E09992}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{4DD35FCD-99F3-4640-9B93-4E2E0035577B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleClient", "UI\ConsoleClient\ConsoleClient.csproj", "{5F6277F6-741D-4CD6-B1C3-8A7A521661C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,12 +21,17 @@ Global
 		{5396E7F1-F913-47C4-B600-6640B4E09992}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5396E7F1-F913-47C4-B600-6640B4E09992}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5396E7F1-F913-47C4-B600-6640B4E09992}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F6277F6-741D-4CD6-B1C3-8A7A521661C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F6277F6-741D-4CD6-B1C3-8A7A521661C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F6277F6-741D-4CD6-B1C3-8A7A521661C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F6277F6-741D-4CD6-B1C3-8A7A521661C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5396E7F1-F913-47C4-B600-6640B4E09992} = {CF56FA58-7758-4159-8AB8-1E8B8024191B}
+		{5F6277F6-741D-4CD6-B1C3-8A7A521661C3} = {4DD35FCD-99F3-4640-9B93-4E2E0035577B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {46FC2DCE-C592-4B59-9D8E-01464F5E4808}

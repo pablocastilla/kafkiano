@@ -5,3 +5,5 @@
 /Services/OrdersService/obj
 /Services/OrdersService/bin/Debug/netcoreapp2.1
 /.vs
+/UI/ConsoleClient/bin/Debug/netcoreapp2.1
+/UI/ConsoleClient/obj
