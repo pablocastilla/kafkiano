@@ -7,3 +7,6 @@
 /.vs
 /UI/ConsoleClient/bin/Debug/netcoreapp2.1
 /UI/ConsoleClient/obj
+/Services/OrdersService.Message/obj/Debug/netstandard2.0
+/Services/OrdersService.Message/obj
+/Services/OrdersService.Message/bin/Debug/netstandard2.0

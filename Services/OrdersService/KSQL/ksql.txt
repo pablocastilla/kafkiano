@@ -1,0 +1,2 @@
+CREATE STREAM OrdersCommandsStream (User VARCHAR, Product VARCHAR, Quantity INT) WITH (kafka_topic='OrdersCommands', value_format='json');
+CREATE TABLE OrdersByProduct as select Product,count(*) from OrdersCommandsStream group by Product;

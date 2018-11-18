@@ -1,4 +1,6 @@
 ﻿using Confluent.Kafka;
+using Newtonsoft.Json;
+using OrdersService.Message;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -75,17 +77,13 @@ namespace OrdersService
                         var consumeResult = consumer.Consume(cancellationToken);
                         Console.WriteLine($"Topic: {consumeResult.Topic} Partition: {consumeResult.Partition} Offset: {consumeResult.Offset} {consumeResult.Value}");
 
-                        if (consumeResult.Offset % commitPeriod == 0)
-                        {
-                            // The Commit method sends a "commit offsets" request to the Kafka
-                            // cluster and synchronously waits for the response. This is very
-                            // slow compared to the rate at which the consumer is capable of
-                            // consuming messages. A high performance application will typically
-                            // commit offsets relatively infrequently and be designed handle
-                            // duplicate messages in the event of failure.
-                            var committedOffsets = consumer.Commit(consumeResult);
-                            Console.WriteLine($"Committed offset: {committedOffsets}");
-                        }
+                        var orderCreated = JsonConvert.DeserializeObject<OrderCreated>(consumeResult.Message.Value);
+
+
+                        var committedOffsets = consumer.Commit(consumeResult);
+                        Console.WriteLine($"Committed offset: {committedOffsets}");
+
+                        
                     }
                     catch (ConsumeException e)
                     {

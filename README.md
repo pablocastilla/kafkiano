@@ -21,10 +21,8 @@ docker network create confluent
 6. KSQL CLI
    - docker run -it --net=confluent confluentinc/cp-ksql-cli http://ksql-server:8088
 
-#### stop containers
+#### stop and remove containers
 docker stop $(docker ps -a -q) 
-
-#### remove containers
 docker rm $(docker ps -a -q)
 
 

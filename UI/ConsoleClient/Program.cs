@@ -1,5 +1,8 @@
 ﻿using Confluent.Kafka;
+using Newtonsoft.Json;
+using OrdersService.Message;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -8,7 +11,9 @@ namespace ConsoleClient
     public class Program
     {
         public static async Task Main(string[] args)
-        {                
+        {
+
+            List<string> products = new List<string>() {"Nintendo Switch" };
 
             var config = new ProducerConfig { BootstrapServers = "127.0.0.1:9092" };
 
@@ -64,7 +69,17 @@ namespace ConsoleClient
                     {
                         // Awaiting the asynchronous produce request below prevents flow of execution
                         // from proceeding until the acknowledgement from the broker is received.
-                        var deliveryReport = await producer.ProduceAsync("OrdersCommands", new Message<string, string> { Key = key, Value = val });
+                        var deliveryReport = await producer.ProduceAsync("OrdersCommands", new Message<string, string>
+                        {
+                            Key = products[0],
+                            Value = JsonConvert.SerializeObject(
+                                new OrderCreated()
+                                {
+                                    Product = products[0],
+                                    User = "pcv",
+                                    Quantity = 1
+                                })
+                        });
                         Console.WriteLine($"delivered to: {deliveryReport.TopicPartitionOffset}");
                     }
                     catch (KafkaException e)
