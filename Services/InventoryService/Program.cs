@@ -1,11 +1,11 @@
 ﻿using Confluent.Kafka;
+using Constants;
 using Newtonsoft.Json;
-using OrdersService.Messages;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace OrdersService
+namespace InventoryService
 {
     class Program
     {
@@ -20,7 +20,7 @@ namespace OrdersService
             };
 
 
-            Run_Consume(new List<string>() {"OrdersCommands"}, cts.Token);
+            Run_Consume(new List<string>() { SERVICES.INVENTORYSERVICECOMMANDS}, cts.Token);
         }
 
 
@@ -76,14 +76,12 @@ namespace OrdersService
                     {
                         var consumeResult = consumer.Consume(cancellationToken);
                         Console.WriteLine($"Topic: {consumeResult.Topic} Partition: {consumeResult.Partition} Offset: {consumeResult.Offset} {consumeResult.Value}");
-
-                        var orderCreated = JsonConvert.DeserializeObject<OrderCreated>(consumeResult.Message.Value);
-
+                                               
 
                         var committedOffsets = consumer.Commit(consumeResult);
                         Console.WriteLine($"Committed offset: {committedOffsets}");
 
-                        
+
                     }
                     catch (ConsumeException e)
                     {
@@ -94,6 +92,5 @@ namespace OrdersService
                 consumer.Close();
             }
         }
-
     }
 }

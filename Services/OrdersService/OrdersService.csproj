@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OrdersService.Message\OrdersService.Message.csproj" />
+    <ProjectReference Include="..\OrdersService.Messages\OrdersService.Messages.csproj" />
   </ItemGroup>
 
 </Project>

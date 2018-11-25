@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
+using Constants;
 using Newtonsoft.Json;
-using OrdersService.Message;
+using OrdersService.Messages;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,6 +33,23 @@ namespace ConsoleClient
                     e.Cancel = true; // prevent the process from terminating.
                     cancelled = true;
                 };
+
+
+                //create 10 switchs
+                
+                var deliveryReport = await producer.ProduceAsync(SERVICES.INVENTORYSERVICECOMMANDS, new Message<string, string>
+                {
+                    Key = products[0],
+                    Value = JsonConvert.SerializeObject(
+                                new OrderCreated()
+                                {
+                                    Product = products[0],
+                                    User = "pcv",
+                                    Quantity = 10
+                                })
+                });
+                
+
 
                 while (!cancelled)
                 {
@@ -69,7 +87,7 @@ namespace ConsoleClient
                     {
                         // Awaiting the asynchronous produce request below prevents flow of execution
                         // from proceeding until the acknowledgement from the broker is received.
-                        var deliveryReport = await producer.ProduceAsync("OrdersCommands", new Message<string, string>
+                        deliveryReport = await producer.ProduceAsync(SERVICES.ORDERSSERVICECOMMANDS, new Message<string, string>
                         {
                             Key = products[0],
                             Value = JsonConvert.SerializeObject(

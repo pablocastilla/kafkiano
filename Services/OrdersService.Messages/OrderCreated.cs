@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OrdersService.Message
+namespace OrdersService.Messages
 {
     public class OrderCreated
     {
