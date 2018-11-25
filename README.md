@@ -27,5 +27,5 @@ docker rm $(docker ps -a -q)
 
 
 # Example in .net
-
+https://www.confluent.io/blog/building-a-microservices-ecosystem-with-kafka-streams-and-ksql/
 https://github.com/confluentinc/kafka-streams-examples/tree/3.3.1-post/src/main/java/io/confluent/examples/streams/microservices
