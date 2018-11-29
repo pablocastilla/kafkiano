@@ -18,3 +18,5 @@
 /Services/InventoryService.Messages/obj
 /Services/OrdersService.Messages/bin/Debug/netstandard2.0
 /Services/OrdersService.Messages/obj
+/UI/WebUI/bin/Debug/netcoreapp2.1
+/UI/WebUI/obj

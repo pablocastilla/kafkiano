@@ -1,0 +1,21 @@
+﻿@model IndexViewModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+@using (Html.BeginForm("AddStock", "Home"))
+{
+    @Html.TextBoxFor(model => model.ProductToAdd, new { @class = "form-control round-input", @style = "width:200px" })
+    @Html.TextBoxFor(model => model.QuantityToAdd, new { @class = "form-control round-input", @style = "width:200px" })
+
+    <input type="submit"  value="Add Stock" />
+}
+
+@using (Html.BeginForm("MakeOrder", "Home"))
+{
+    @Html.TextBoxFor(model => model.ProductToOrder, new { @class = "form-control round-input", @style = "width:200px",value="asdf" })
+    @Html.TextBoxFor(model => model.QuantityToOrder, new { @class = "form-control round-input", @style = "width:200px" })
+
+    <input type="submit"  value="Make order" />
+}
+
