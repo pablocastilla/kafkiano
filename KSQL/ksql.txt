@@ -2,21 +2,24 @@
 SET 'auto.offset.reset'='earliest';
 
 //INVENTORY STREAMS
-CREATE STREAM InventoryEventsStream (User VARCHAR, ProductName VARCHAR, Quantity INT) WITH (kafka_topic='INVENTORYEVENTS', key='ProductName', value_format='json');
+CREATE STREAM InventoryEventsStream (ProductName VARCHAR, Quantity INT) WITH (kafka_topic='INVENTORYEVENTS', key='ProductName', value_format='json');
 CREATE TABLE ProductsStock as select ProductName,sum(Quantity) as Stock from InventoryEventsStream group by ProductName;
 
 // ORDERS STREAMS
-CREATE STREAM OrdersCreatedStream (User VARCHAR, ProductName VARCHAR, Quantity INT) WITH (kafka_topic='ORDERSEVENTS', key='ProductName', value_format='json');
+CREATE STREAM OrdersCreatedStream (ProductName VARCHAR,Quantity INT) WITH (kafka_topic='ORDERSEVENTS', key='ProductName', value_format='json',PARTITIONS=4);
 CREATE TABLE ProductsOrdered as select ProductName,sum(Quantity) as Orders from OrdersCreatedStream group by ProductName;
 
+//logic: I want the stock left when I make an order
+SELECT * FROM OrdersCreatedStream ocs JOIN  StockByProductTable sbpt ON sbpt.ProductName = ocs.ProductName;
 
 // join
-CREATE TABLE StockByProductTable AS  SELECT ps.ProductName,ps.Stock - op.Orders  FROM ProductsOrdered op JOIN ProductsStock ps ON op.ProductName = ps.ProductName;
+CREATE TABLE StockByProductTable AS  SELECT ps.ProductName as ProductName,ps.Stock - op.Orders as Stock FROM ProductsOrdered op JOIN ProductsStock ps ON op.ProductName = ps.ProductName;
 
 
 //terminate
-DROP STREAM IF EXISTS OrdersCommandsStream DELETE TOPIC;
+DROP STREAM IF EXISTS OrdersCreatedStream DELETE TOPIC;
 DROP STREAM IF EXISTS InventoryCommandsStream DELETE TOPIC;
 DROP TABLE IF EXISTS OrdersByProduct DELETE TOPIC;
-DROP TABLE IF EXISTS ProductStock DELETE TOPIC;
+DROP TABLE IF EXISTS ProductsOrdered DELETE TOPIC;
+DROP TABLE IF EXISTS StockByProductTable DELETE TOPIC;
 TERMINATE query_id;

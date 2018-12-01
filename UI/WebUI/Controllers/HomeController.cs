@@ -32,7 +32,7 @@ namespace WebUI.Controllers
         [HttpPost]
         public async Task<IActionResult> MakeOrder(IndexViewModel model)
         {
-            await MakeOrderProxy(model.ProductToAdd, model.QuantityToAdd);
+            await MakeOrderProxy(model.ProductToOrder, model.QuantityToOrder);
 
             return Redirect("/");
         }
@@ -55,6 +55,7 @@ namespace WebUI.Controllers
         {
             var message = new OrderCreated()
             {
+                OrderId = Guid.NewGuid().ToString(),
                 User="pcv",
                 ProductName = productName,
                 Quantity = quantity
