@@ -23,7 +23,7 @@ namespace WebUI.Controllers
 
         [HttpPost]
         public async Task<IActionResult> AddStock(IndexViewModel model)
-        {
+        {          
             await AddStockProxy(model.ProductToAdd,model.QuantityToAdd);
 
             return Redirect("/");
