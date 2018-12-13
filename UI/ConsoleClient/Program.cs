@@ -43,7 +43,7 @@ namespace ConsoleClient
                     Value = JsonConvert.SerializeObject(
                                 new OrderCreated()
                                 {
-                                    Product = products[0],
+                                    ProductName = products[0],
                                     User = "pcv",
                                     Quantity = 10
                                 })
@@ -93,7 +93,7 @@ namespace ConsoleClient
                             Value = JsonConvert.SerializeObject(
                                 new OrderCreated()
                                 {
-                                    Product = products[0],
+                                    ProductName = products[0],
                                     User = "pcv",
                                     Quantity = 1
                                 })
