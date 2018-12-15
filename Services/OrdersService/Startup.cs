@@ -40,6 +40,7 @@ namespace OrdersService
                 app.UseHsts();
             }
 
+            
             app.UseHttpsRedirection();
             app.UseMvc();
         }
