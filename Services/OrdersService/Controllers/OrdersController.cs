@@ -36,9 +36,9 @@ namespace OrdersService.Controllers
 
             using (var producer = new Producer<string, string>(config))
             {
-                var deliveryReport = await producer.ProduceAsync(SERVICES.ORDERSSERVICEEVENTS, new Message<string, string>
+                var deliveryReport = await producer.ProduceAsync(TOPICS.ORDERSEVENTS, new Message<string, string>
                 {
-                    Key = value.ProductName,
+                    Key = value.OrderId,
                     Value = JsonConvert.SerializeObject(value)
                 });
 

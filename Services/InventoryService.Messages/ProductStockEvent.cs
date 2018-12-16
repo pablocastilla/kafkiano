@@ -9,7 +9,9 @@ namespace InventoryService.Messages
         public StockAction Action { get; set; }
 
         public int Quantity { get; set; }
+
+        public string OrderId { get; set; }
     }
 
-    public enum StockAction { Add,Remove}
+    public enum StockAction { Add, Validate, Remove}
 }

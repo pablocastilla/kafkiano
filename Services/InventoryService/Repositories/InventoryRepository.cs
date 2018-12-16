@@ -28,16 +28,42 @@ namespace InventoryService
             stockDictionary[stockInfo.ProductName] = stockInfo.Stock;
         }
 
-        public void AddStockToLocalPersistence(string productName, int quantity)
+        public int AddStockToLocalPersistence(string productName, int quantity)
         {
             var stockDictionary = cache.GetOrCreate<Dictionary<string, int>>(STOCKKEY, (d) =>
             {
                 return new Dictionary<string, int>();
             });
 
+            if(!stockDictionary.ContainsKey(productName))
+            {
+                stockDictionary.Add(productName, 0);
+            }
+
             var currentStock = stockDictionary[productName];
 
-            stockDictionary[productName] = currentStock + quantity;
+            var finalStock = currentStock + quantity; 
+
+            stockDictionary[productName] = finalStock;
+
+            return finalStock;
+        }
+
+        public int GetStockFromLocalPersistence(string productName)
+        {
+            var stockDictionary = cache.GetOrCreate<Dictionary<string, int>>(STOCKKEY, (d) =>
+            {
+                return new Dictionary<string, int>();
+            });
+
+            if (!stockDictionary.ContainsKey(productName))
+            {
+                stockDictionary.Add(productName, 0);
+            }
+
+            var currentStock = stockDictionary[productName];            
+
+            return currentStock;
         }
     }
 }

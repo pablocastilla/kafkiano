@@ -36,7 +36,7 @@ namespace InventoryService.Controllers
 
             using (var producer = new Producer<string, string>(config))
             {
-                var deliveryReport = await producer.ProduceAsync(SERVICES.INVENTORYEVENTS, new Message<string, string>
+                var deliveryReport = await producer.ProduceAsync(TOPICS.INVENTORYEVENTS, new Message<string, string>
                 {
                     Key = value.ProductName,
                     Value = JsonConvert.SerializeObject(value)

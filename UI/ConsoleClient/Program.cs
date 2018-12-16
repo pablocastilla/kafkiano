@@ -37,7 +37,7 @@ namespace ConsoleClient
 
                 //create 10 switchs
                 
-                var deliveryReport = await producer.ProduceAsync(SERVICES.INVENTORYSERVICECOMMANDS, new Message<string, string>
+                var deliveryReport = await producer.ProduceAsync(TOPICS.INVENTORYEVENTS, new Message<string, string>
                 {
                     Key = products[0],
                     Value = JsonConvert.SerializeObject(
@@ -87,7 +87,7 @@ namespace ConsoleClient
                     {
                         // Awaiting the asynchronous produce request below prevents flow of execution
                         // from proceeding until the acknowledgement from the broker is received.
-                        deliveryReport = await producer.ProduceAsync(SERVICES.ORDERSSERVICECOMMANDS, new Message<string, string>
+                        deliveryReport = await producer.ProduceAsync(TOPICS.ORDERSEVENTS, new Message<string, string>
                         {
                             Key = products[0],
                             Value = JsonConvert.SerializeObject(

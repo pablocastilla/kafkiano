@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using Constants;
 using InventoryService.Messages;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
@@ -16,13 +17,13 @@ namespace InventoryService
 {
     //https://docs.microsoft.com/en-us/dotnet/standard/microservices-architecture/multi-container-microservice-net-applications/background-tasks-with-ihostedservice
 
-    public class GetProductsStock : BackgroundService
+    public class EventLogic : BackgroundService
     {
         IMemoryCache cache;
         InventoryRepository inventoryRepository;
+                       
 
-
-        public GetProductsStock(IMemoryCache memoryCache)
+        public EventLogic(IMemoryCache memoryCache)
         {
             this.cache = memoryCache;
 
@@ -32,10 +33,10 @@ namespace InventoryService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await CallGetProductsStockToTopic(stoppingToken);
+            await EventLogicByTopic(stoppingToken);
         }
 
-        private async Task CallGetProductsStockToTopic(CancellationToken stoppingToken)
+        private async Task EventLogicByTopic(CancellationToken stoppingToken)
         {
 
             var config = new ConsumerConfig
@@ -47,7 +48,7 @@ namespace InventoryService
 
             var switchFromReadingToExecutingCommands = false;
 
-            var topics = new List<string>() { "STOCKBYPRODUCTTABLE", "INVENTORYEVENTS", "ORDEREVENTS" };
+            var topics = new List<string>() { TOPICS.STOCKBYPRODUCTTOPIC, TOPICS.INVENTORYEVENTS, TOPICS.ORDERSEVENTS };
 
             using (var consumer = new Consumer<Ignore, string>(config))
             {
@@ -55,7 +56,7 @@ namespace InventoryService
                 consumer.Assign(
                     new List<TopicPartitionOffset>()
                     {
-                        new TopicPartitionOffset("STOCKBYPRODUCTTABLE", 0, Offset.Beginning),
+                        new TopicPartitionOffset(TOPICS.STOCKBYPRODUCTTOPIC, 0, Offset.Beginning),
 
                     }
                     );
@@ -75,8 +76,8 @@ namespace InventoryService
                         consumer.Assign(
                          new List<TopicPartitionOffset>()
                          {
-                            new TopicPartitionOffset("INVENTORYEVENTS", 0, Offset.End),
-                            new TopicPartitionOffset("ORDEREVENTS", 0, Offset.End),
+                            new TopicPartitionOffset(TOPICS.INVENTORYEVENTS, 0, Offset.End),
+                            new TopicPartitionOffset(TOPICS.ORDERSEVENTS, 0, Offset.End),
                          }
                          );
 
@@ -92,21 +93,51 @@ namespace InventoryService
 
                         switch (consumeResult.Topic)
                         {
-                            //it adds to the stock
-                            case "INVENTORYEVENTS":
-                                var stockEvent = JsonConvert.DeserializeObject<ProductStockEvent>(consumeResult.Message.Value);
-                                inventoryRepository.AddStockToLocalPersistence(stockEvent.ProductName, stockEvent.Quantity);
-                               
-                                break;
-
                             //at the begining this stores the stock
-                            case "STOCKBYPRODUCTTABLE":
+                            case TOPICS.STOCKBYPRODUCTTOPIC:
                                 var stockInfo = JsonConvert.DeserializeObject<ProductStockInfo>(consumeResult.Message.Value);
                                 inventoryRepository.SetStockToLocalPersistence(stockInfo);
                                 break;
 
+                            //it adds to the stock
+                            case TOPICS.INVENTORYEVENTS:
+                                var stockEvent = JsonConvert.DeserializeObject<ProductStockEvent>(consumeResult.Message.Value);
+
+                                switch (stockEvent.Action)
+                                {
+                                    case StockAction.Add:
+                                        var stock = inventoryRepository.AddStockToLocalPersistence(stockEvent.ProductName, stockEvent.Quantity);
+                                        await PublishEvent(TOPICS.STOCKBYPRODUCTTOPIC, stockEvent.ProductName, new ProductStockInfo() { ProductName = stockEvent.ProductName, Stock = stock });
+                                        break;
+
+                                    case StockAction.Remove:
+                                        stock = inventoryRepository.AddStockToLocalPersistence(stockEvent.ProductName, stockEvent.Quantity*-1);
+                                        await PublishEvent(TOPICS.STOCKBYPRODUCTTOPIC, stockEvent.ProductName, new ProductStockInfo() { ProductName = stockEvent.ProductName, Stock = stock });
+                                        break;
+
+                                    case StockAction.Validate:
+                                        stock = inventoryRepository.GetStockFromLocalPersistence(stockEvent.ProductName);
+                                        if(stock>0)
+                                        {
+                                            //publish "order validated event" and remove one
+                                            stock = inventoryRepository.AddStockToLocalPersistence(stockEvent.ProductName, stockEvent.Quantity * -1);
+                                            await PublishEvent(TOPICS.INVENTORYVALIDATIONSEVENTS, stockEvent.OrderId, new ProductStockValidated() {Ok=true,OrderId=stockEvent.OrderId,ProductName=stockEvent.ProductName });
+
+                                        }
+                                        else
+                                        {
+                                            //publish "order invalid event"
+                                            await PublishEvent(TOPICS.INVENTORYVALIDATIONSEVENTS, stockEvent.OrderId, new ProductStockValidated() { Ok = false, OrderId = stockEvent.OrderId, ProductName = stockEvent.ProductName });
+                                        }
+                                        
+                                        break;
+                                }
+                               
+                                break;
+
+
                             //checks if there is enough stock
-                            case "ORDEREVENTS":
+                            case TOPICS.ORDERSEVENTS:
                                 break;
                         }
 
@@ -119,7 +150,7 @@ namespace InventoryService
                         consumer.Assign(
                                 new List<TopicPartitionOffset>()
                                 {
-                                    new TopicPartitionOffset("STOCKBYPRODUCTTABLE", 0, Offset.Beginning),
+                                    new TopicPartitionOffset(TOPICS.STOCKBYPRODUCTTOPIC, 0, Offset.Beginning),
 
                                }
                                );
@@ -134,6 +165,24 @@ namespace InventoryService
 
         }
 
+        private async Task PublishEvent<TKey,TMessage>(string topic, TKey key, TMessage message)
+        {
+
+            var config = new ProducerConfig { BootstrapServers = "127.0.0.1:9092" };
+
+            using (var producer = new Producer<TKey, string>(config))
+            {
+                var deliveryReport = await producer.ProduceAsync(topic, new Message<TKey, string>
+                {
+                    Key = key,
+                    Value = JsonConvert.SerializeObject(message)
+                });
+
+
+            }
+
+           
+        }
         
 
         /*
