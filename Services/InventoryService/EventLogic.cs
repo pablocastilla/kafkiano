@@ -52,19 +52,32 @@ namespace InventoryService
 
             using (var consumer = new Consumer<Ignore, string>(config))
             {
-                //first assing to the read model
-                consumer.Assign(
-                    new List<TopicPartitionOffset>()
-                    {
+                void LoadStateIntoDictionary()
+                {
+                    //first assing to the read model
+                    consumer.Assign(
+                        new List<TopicPartitionOffset>()
+                        {
                         new TopicPartitionOffset(TOPICS.STOCKBYPRODUCTTOPIC, 0, Offset.Beginning),
 
-                    }
-                    );
+                        }
+                        );
+
+                    switchFromReadingToExecutingCommands = false;
+                }
+
+                LoadStateIntoDictionary();
 
                 consumer.OnError += (_, e)
                         =>
                 {
-                    Console.WriteLine($"Error: {e.Reason}");
+                    LoadStateIntoDictionary();
+                };
+
+                consumer.OnPartitionsRevoked += (_, topicPartitionOffset)
+                     =>
+                {
+                    LoadStateIntoDictionary();
                 };
 
                 consumer.OnPartitionEOF += (_, topicPartitionOffset)
@@ -147,15 +160,7 @@ namespace InventoryService
                     catch (Exception e)
                     {
                         //in case of error start again
-                        consumer.Assign(
-                                new List<TopicPartitionOffset>()
-                                {
-                                    new TopicPartitionOffset(TOPICS.STOCKBYPRODUCTTOPIC, 0, Offset.Beginning),
-
-                               }
-                               );
-
-                        switchFromReadingToExecutingCommands = false;
+                        LoadStateIntoDictionary();
                     }
                 }
 
