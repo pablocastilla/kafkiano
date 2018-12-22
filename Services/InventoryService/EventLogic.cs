@@ -46,71 +46,41 @@ namespace InventoryService
                 EnableAutoCommit = true
             };
 
-            var switchFromReadingToExecutingCommands = false;
+           
 
-            var topics = new List<string>() { TOPICS.STOCKBYPRODUCTTOPIC, TOPICS.INVENTORYEVENTS, TOPICS.ORDERSEVENTS };
+            var topics = new List<string>() { TOPICS.INVENTORYEVENTS, TOPICS.ORDERSEVENTS };
 
             using (var consumer = new Consumer<Ignore, string>(config))
             {
-                void LoadStateIntoDictionary()
-                {
-                    //first assing to the read model
-                    consumer.Assign(
-                        new List<TopicPartitionOffset>()
-                        {
-                        new TopicPartitionOffset(TOPICS.STOCKBYPRODUCTTOPIC, 0, Offset.Beginning),
 
-                        }
-                        );
 
-                    switchFromReadingToExecutingCommands = false;
-                }
-
-                LoadStateIntoDictionary();
+                consumer.Subscribe(topics);
 
                 consumer.OnError += (_, e)
                         =>
                 {
-                    LoadStateIntoDictionary();
+                    
                 };
 
                 consumer.OnPartitionsRevoked += (_, topicPartitionOffset)
                      =>
                 {
-                    LoadStateIntoDictionary();
+                   
                 };
 
                 consumer.OnPartitionEOF += (_, topicPartitionOffset)
                     =>
                 {
-                    //after reading from stockbyproducttable (read model) we process other events
-                    if (!switchFromReadingToExecutingCommands)
-                    {
-                        consumer.Assign(
-                         new List<TopicPartitionOffset>()
-                         {
-                            new TopicPartitionOffset(TOPICS.INVENTORYEVENTS, 0, Offset.End),
-                            new TopicPartitionOffset(TOPICS.ORDERSEVENTS, 0, Offset.End),
-                         }
-                         );
 
-                        switchFromReadingToExecutingCommands = true;
-                    }
                 };
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    try
-                    {
+ 
                         var consumeResult = consumer.Consume(stoppingToken);
 
                         switch (consumeResult.Topic)
                         {
-                            //at the begining this stores the stock
-                            case TOPICS.STOCKBYPRODUCTTOPIC:
-                                var stockInfo = JsonConvert.DeserializeObject<ProductStockInfo>(consumeResult.Message.Value);
-                                inventoryRepository.SetStockToLocalPersistence(stockInfo);
-                                break;
 
                             //it adds to the stock
                             case TOPICS.INVENTORYEVENTS:
@@ -119,21 +89,21 @@ namespace InventoryService
                                 switch (stockEvent.Action)
                                 {
                                     case StockAction.Add:
-                                        var stock = inventoryRepository.AddStockToLocalPersistence(stockEvent.ProductName, stockEvent.Quantity);
+                                        var stock = inventoryRepository.AddStockToPersistence(stockEvent.ProductName, stockEvent.Quantity);
                                         await PublishEvent(TOPICS.STOCKBYPRODUCTTOPIC, stockEvent.ProductName, new ProductStockInfo() { ProductName = stockEvent.ProductName, Stock = stock });
                                         break;
 
                                     case StockAction.Remove:
-                                        stock = inventoryRepository.AddStockToLocalPersistence(stockEvent.ProductName, stockEvent.Quantity*-1);
+                                        stock = inventoryRepository.AddStockToPersistence(stockEvent.ProductName, stockEvent.Quantity*-1);
                                         await PublishEvent(TOPICS.STOCKBYPRODUCTTOPIC, stockEvent.ProductName, new ProductStockInfo() { ProductName = stockEvent.ProductName, Stock = stock });
                                         break;
 
                                     case StockAction.Validate:
-                                        stock = inventoryRepository.GetStockFromLocalPersistence(stockEvent.ProductName);
+                                        stock = inventoryRepository.GetStockFromPersistence(stockEvent.ProductName);
                                         if(stock>0)
                                         {
                                             //publish "order validated event" and remove one
-                                            stock = inventoryRepository.AddStockToLocalPersistence(stockEvent.ProductName, stockEvent.Quantity * -1);
+                                            stock = inventoryRepository.AddStockToPersistence(stockEvent.ProductName, stockEvent.Quantity * -1);
                                             await PublishEvent(TOPICS.INVENTORYVALIDATIONSEVENTS, stockEvent.OrderId, new ProductStockValidated() {Ok=true,OrderId=stockEvent.OrderId,ProductName=stockEvent.ProductName });
 
                                         }
@@ -154,14 +124,6 @@ namespace InventoryService
                                 break;
                         }
 
-
-
-                    }
-                    catch (Exception e)
-                    {
-                        //in case of error start again
-                        LoadStateIntoDictionary();
-                    }
                 }
 
                 consumer.Close();

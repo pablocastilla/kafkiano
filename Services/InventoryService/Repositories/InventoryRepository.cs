@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace InventoryService
 {
+    //this should be moved to a persistent store doing idempotence by transactionid
     public class InventoryRepository
     {
         IMemoryCache cache;
@@ -18,7 +19,7 @@ namespace InventoryService
             cache = memoryCache;
         }
 
-        public void SetStockToLocalPersistence(ProductStockInfo stockInfo)
+        public void SetStockInPersistence(ProductStockInfo stockInfo)
         {
             var stockDictionary = cache.GetOrCreate<Dictionary<string, int>>(STOCKKEY, (d) =>
             {
@@ -28,7 +29,7 @@ namespace InventoryService
             stockDictionary[stockInfo.ProductName] = stockInfo.Stock;
         }
 
-        public int AddStockToLocalPersistence(string productName, int quantity)
+        public int AddStockToPersistence(string productName, int quantity)
         {
             var stockDictionary = cache.GetOrCreate<Dictionary<string, int>>(STOCKKEY, (d) =>
             {
@@ -49,7 +50,7 @@ namespace InventoryService
             return finalStock;
         }
 
-        public int GetStockFromLocalPersistence(string productName)
+        public int GetStockFromPersistence(string productName)
         {
             var stockDictionary = cache.GetOrCreate<Dictionary<string, int>>(STOCKKEY, (d) =>
             {
