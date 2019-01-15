@@ -1,31 +1,29 @@
-# Install kafka docker image
-https://docs.confluent.io/current/installation/docker/docs/installation/single-node-client.html
+## Services with Kafka and dotnet (January 2019)
+#### Intention
+Hi! 
 
-#### put kafka in host file
-127.0.0.1		kafka
+This is a repository with a failed experiment. I just wanted to implement services using kafka and dotnet like it is shown in this article for the JVM:
+https://www.confluent.io/blog/building-a-microservices-ecosystem-with-kafka-streams-and-ksql/ 
 
-#### create docker network and run images
+What I love from it is that it seems you can have kafka for messaging and storing data all in a exactly once fashion. I see it like the holy grail and if that is possible kafka can be a great election for event publishing but also for implementing transactional logic (C in the CQRS world). 
 
-docker network create confluent
+#### Why is it a failure?
+If you see this java code the trick is in the transform function
+https://github.com/confluentinc/kafka-streams-examples/blob/3.3.1-post/src/main/java/io/confluent/examples/streams/microservices/InventoryService.java 
 
-1. zookeeper
-   - docker run -d --net=confluent --name=zookeeper -e ZOOKEEPER_CLIENT_PORT=2181 confluentinc/cp-zookeeper:5.0.1
-2. Kafka
-   - docker run -d --net=confluent --name=kafka -e KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181 -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092 -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 -p 9092:9092 confluentinc/cp-kafka:5.0.1
-3. Schema registry
-   - docker run -d --net=confluent --name=schema-registry -e SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL=zookeeper:2181 -e SCHEMA_REGISTRY_HOST_NAME=schema-registry -e SCHEMA_REGISTRY_LISTENERS=http://0.0.0.0:8081 confluentinc/cp-schema-registry:5.0.1
-4. REST proxy
-   - docker run -d --net=confluent --name=kafka-rest -e KAFKA_REST_ZOOKEEPER_CONNECT=zookeeper:2181 -e KAFKA_REST_LISTENERS=http://0.0.0.0:8082 -e KAFKA_REST_SCHEMA_REGISTRY_URL=http://schema-registry:8081 -e KAFKA_REST_HOST_NAME=kafka-rest confluentinc/cp-kafka-rest:5.0.1
-5. KSQL
-   - docker run -d --net=confluent --name=ksql-server -e KSQL_BOOTSTRAP_SERVERS=kafka:9092 -e KSQL_LISTENERS=http://0.0.0.0:8088 -e KSQL_KSQL_SCHEMA_REGISTRY_URL=http://schema-registry:8081 -p 8088:8088 confluentinc/cp-ksql-server:5.0.1
-6. KSQL CLI
-   - docker run -it --net=confluent confluentinc/cp-ksql-cli http://ksql-server:8088
+It access a storage in the kafka node and execute the logic based on the information from it in a exactly once mode. The problem is I wasn't able to implement it in dotnet: 
 
-#### stop and remove containers
-docker stop $(docker ps -a -q) 
-docker rm $(docker ps -a -q)
+* Although you can order the logic per entity and execute the entity logic one by one you don't have access to the kafka node rockdb that can participate in the kafka transaction.
+* In KSQL you can have a lot of queries that are executed in parallel, this is great for streaming calculus or creating read models, but I don't see KSQL can be useful with logic that just have a certain complexity. 
+
+#### What can you do with Kafka and dotnet?
+* You can use it as a log and subscribe to it, you can read a message in an "at least once" mode, making the usual tricks for having idempotence. This is huge. But I don't see you can use it as a transport+transactional storage.
 
 
-# Example in .net
-https://www.confluent.io/blog/building-a-microservices-ecosystem-with-kafka-streams-and-ksql/
-https://github.com/confluentinc/kafka-streams-examples/tree/3.3.1-post/src/main/java/io/confluent/examples/streams/microservices
+#### What would we need to have transport+storage?
+* Transactions in the dotnet driver (they are working on it)
+* Access to the keyvalue store (rockdb) in the transaction (I think this is not in the roadmap).
+
+#### What have I learnt in this failure?
+* KSQL
+* More kafka (I love the ordering by key feature!)
